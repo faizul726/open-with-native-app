@@ -9,22 +9,30 @@ import androidx.core.net.toUri
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var url = intent.getStringExtra(Intent.EXTRA_TEXT)
-
-        if (!url?.startsWith("http://")!! && !url.startsWith("https://")) {
-            url = "http://$url"
+        var url: String? = null
+        
+        when(intent?.action) {
+            Intent.ACTION_SEND -> {
+                url = intent.getStringExtra(Intent.EXTRA_TEXT)
+            }
+            Intent.ACTION_PROCESS_TEXT -> {
+                url = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT)
+            }
         }
-        try {
-            startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    url.toUri()
-                )/*.apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }*/
-            )
-        } catch (e: Exception) {
-            Toast.makeText(applicationContext, e.toString(), Toast.LENGTH_SHORT).show()
+        if (!url.isNullOrBlank()) {
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                url = "http://$url"
+            }
+            try {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        url.toUri()
+                    )
+                )
+            } catch (e: Exception) {
+                Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
+            }
         }
         finishAffinity()
     }
